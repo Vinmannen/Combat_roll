@@ -29,14 +29,15 @@ struct Enemy *initialize_enemy(){
     }
 
     enemy->level =1;
-    enemy->health = 3;
-    enemy->attack = 3;
-    enemy->defence = 2;
+    enemy->health = 5;
+    enemy->attack = 4;
+    enemy->defence = 1;
     enemy->name = "Wolf";
 
     return enemy;
 }
 
+/*
 //Initialize the player - choose class, race etc later? random start?
 struct Player *initialize_player(){
     //Allocate enough memory for the struct
@@ -46,23 +47,54 @@ struct Player *initialize_player(){
         exit(1);
     }
 
-    player->level =1;
+    player->level = 1;
     player->health = 3;
-    player->attack = 3;
-    player->defence = 2;
+    player->attack = 5;
+    player->defence = 1;
     player->class = "Wizard";
 
     return player;
 }
+*/
 
 int main(){
     int    player_die, enemy_die;
     char   roll;
+    int   class;
     time_t t;
     struct Enemy *e  = initialize_enemy();
-    struct Player *p = initialize_player();
+    struct Player *p;
 
-    printf("You are a powerful level %d %s with %d HP. You got %d attack and %d defence.\n",
+    printf("Choose a class:\n  1. Wizard\n  2. Thief\n  3. Warrior\nEnter: ");
+    scanf(" %i", &class);
+    if(!(class == 1 || class == 2 || class == 3)){
+        printf("Invalid input.\n");
+        return -1;
+    }
+    else if (class == 1){
+        p->class    = "Wizard";
+        p->level    = 1;
+        p->health   = 3;
+        p->attack   = 3;
+        p->defence  = 1;
+    }
+    else if (class == 2){
+        p->class    = "Thief";
+        p->level    = 1;
+        p->health   = 3;
+        p->attack   = 3;
+        p->defence  = 2;
+    }
+    else if(class == 3){
+        p->class    = "Warrior";
+        p->level    = 1;
+        p->health   = 5;
+        p->attack   = 2;
+        p->defence  = 3;
+    }
+
+
+    printf("\nYou are a powerful level %d %s with %d HP. You got %d attack and %d defence.\n",
             p->level, p->class, p->health, p->attack, p->defence);
     printf("You encounter a level %d %s with %d HP. It has %d attack and %d defence.\n", 
             e->level, e->name, e->health, e->attack, e->defence);
@@ -72,7 +104,7 @@ int main(){
         scanf(" %c", &roll);
         if(!(roll == 'r' || roll == 'R')){ //want this to try the condition again instead of quitting, but not rolling...
             printf("Got to hit R!\r");     //"else: jump back to start"
-            break;
+            return -1;
         }
         //Intializes the random number generator
         srand((unsigned) time(&t));
