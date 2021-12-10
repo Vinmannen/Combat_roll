@@ -89,14 +89,21 @@ int main(){
         enemy_die = rand() % 21;
         printf("Enemy  roll: %d\n", enemy_die);
 
-        //The highest roller can attack, if equal neither will make a move
         if (player_die > enemy_die){
-            printf("Player attacks the enemy for %d damage!\n", p->attack - e[enemy_to_fight].defence);
-            e[enemy_to_fight].health -= p->attack - e[enemy_to_fight].defence;
+            if(p->attack <= e[enemy_to_fight].defence){
+                printf("Enemy dodged the attack!\n");
+            }else{
+                printf("Player attacks the enemy for %d damage!\n", p->attack - e[enemy_to_fight].defence);
+                e[enemy_to_fight].health -= p->attack - e[enemy_to_fight].defence;
+            }
         }
         else if (enemy_die > player_die){
-            printf("Enemy attacks the player for %d damage!\n", e[enemy_to_fight].attack - p->defence);
-            p->health -= e[enemy_to_fight].attack - p->defence;
+            if(p->defence >= e[enemy_to_fight].defence){
+                printf("You dodged the attack!\n");
+            }else{
+                printf("Enemy attacks the player for %d damage!\n", e[enemy_to_fight].attack - p->defence);
+                p->health -= e[enemy_to_fight].attack - p->defence;
+            }
         }
         else{
             printf("The attack were deflected!.\n");
