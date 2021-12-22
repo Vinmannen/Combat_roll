@@ -2,13 +2,17 @@
 #include <stdlib.h>
 #include <time.h>
 
+int     player_die, enemy_die, enemy_to_fight;
+char    roll;
+time_t  t;
+
 //Skeleton for the enemy
 struct Enemy {
     int level;
     int health;
     int attack;
     int defence;
-    char name[100];
+    char name[20];
 };
 
 //Skeleton for the player
@@ -20,6 +24,21 @@ struct Player {
     char *class;
 };
 
+//Generic item stats.
+struct ItemStats {
+    int dexterity;
+    int intelligence;
+    int strenght;
+    int hitpoints;
+};
+
+//Generic drop table.
+struct ItemDrop {
+    char iName[50];
+    struct ItemStats stats;
+    float dropChance;
+};
+
 //List of enemies
 struct Enemy e[] = {
     {1, 2, 3, 2, "Wolf"},
@@ -27,13 +46,77 @@ struct Enemy e[] = {
     {1, 3, 1, 1, "Goblin"}
 };
 
-int main(){
-    int     player_die, enemy_die, enemy_to_fight;
-    char    roll;
-    int     class;
-    time_t  t;
-    struct  Player *p;
+//Loot table. Diverify later? Drop based on which mob.
+struct ItemDrop items[] = {
+    {"Sword", {1,1,1,1}, 1.0},
+    {"Staff", {1,5,2,3}, 1.0}
+};
+
+int combat(struct Player *p){
+    //Pick a random enemy from e[]
+    enemy_to_fight = rand() % (int)( sizeof(e) / sizeof(e[0]));
+    printf("You encounter a level %d %s with %d HP. It has %d attack and %d defence.\n", 
+    e[enemy_to_fight].level, e[enemy_to_fight].name, e[enemy_to_fight].health, e[enemy_to_fight].attack, e[enemy_to_fight].defence);
+
+    do {
+    printf("Press 'R' to roll. ");
+    scanf(" %c", &roll);
+    if(!(roll == 'r' || roll == 'R')){ //want this to try the condition again instead of quitting, but not rolling...
+        printf("Got to hit R!\r");     //"else: jump back to start"
+        return -1;
+    }
+
+    //Roll a random number between 0-20
+    player_die = rand() % 21;
+    printf("Player roll: %d\n", player_die);
+
+    enemy_die = rand() % 21;
+    printf("Enemy  roll: %d\n", enemy_die);
+
+    //The highest roller can attack, if equal neither will make a move
+    if (player_die > enemy_die){
+        if(p->attack <= e[enemy_to_fight].defence){
+            printf("Enemy dodged the attack!\n");
+        }else{
+            printf("Player attacks the enemy for %d damage!\n", p->attack - e[enemy_to_fight].defence);
+            e[enemy_to_fight].health -= p->attack - e[enemy_to_fight].defence;
+        }
+    }
+    else if (enemy_die > player_die){
+        if(p->defence >= e[enemy_to_fight].defence){
+            printf("You dodged the attack!\n");
+        }else{
+            printf("Enemy attacks the player for %d damage!\n", e[enemy_to_fight].attack - p->defence);
+            p->health -= e[enemy_to_fight].attack - p->defence;
+        }
+    }
+    else{
+        printf("The attack were deflected!.\n");
+    }
+    printf("Current enemy HP: %d\n", e[enemy_to_fight].health);
+    printf("Current player HP: %d\n", p->health);
+
+    }while(((e[enemy_to_fight].health >= 1) && (p->health >= 1)) && ((roll == 'r') || (roll == 'R')));
+        //while either health is above 0 and 'r' is pressed...
     
+    printf("You got a %s!\n %d dexterity\n %d intelligence\n %d strenght\n %d hitpoints\n", items[0].iName, 
+                                                                                            items[0].stats.dexterity, 
+                                                                                            items[0].stats.intelligence,  
+                                                                                            items[0].stats.strenght, 
+                                                                                            items[0].stats.hitpoints);
+    
+    //Print out the battle result.
+    if(e[enemy_to_fight].health < 1){
+        printf("You have defeated the enemy!\n");
+    }
+    else if(p->health < 1){
+        printf("You have been defeated!\n");
+    }
+}
+
+int main(){
+    struct  Player *p;
+    int     class;
     //Intializes the random number generator
     srand((unsigned) time(&t));
 
@@ -65,62 +148,11 @@ int main(){
         p->attack   = 2;
         p->defence  = 3;
     }
-
-    printf("\nYou are a powerful level %d %s with %d HP. You got %d attack and %d defence.\n",
-            p->level, p->class, p->health, p->attack, p->defence);
     
-    //Pick a random enemy from e[]
-    enemy_to_fight = rand() % (int)( sizeof(e) / sizeof(e[0]));
-    printf("You encounter a level %d %s with %d HP. It has %d attack and %d defence.\n", 
-            e[enemy_to_fight].level, e[enemy_to_fight].name, e[enemy_to_fight].health, e[enemy_to_fight].attack, e[enemy_to_fight].defence);
+    printf("\nYou are a powerful level %d %s with %d HP. You got %d attack and %d defence.\n",
+    p->level, p->class, p->health, p->attack, p->defence);
 
-    do {
-        printf("Press 'R' to roll. ");
-        scanf(" %c", &roll);
-        if(!(roll == 'r' || roll == 'R')){ //want this to try the condition again instead of quitting, but not rolling...
-            printf("Got to hit R!\r");     //"else: jump back to start"
-            return -1;
-        }
-
-        //Roll a random number between 0-20
-        player_die = rand() % 21;
-        printf("Player roll: %d\n", player_die);
-
-        enemy_die = rand() % 21;
-        printf("Enemy  roll: %d\n", enemy_die);
-
-        if (player_die > enemy_die){
-            if(p->attack <= e[enemy_to_fight].defence){
-                printf("Enemy dodged the attack!\n");
-            }else{
-                printf("Player attacks the enemy for %d damage!\n", p->attack - e[enemy_to_fight].defence);
-                e[enemy_to_fight].health -= p->attack - e[enemy_to_fight].defence;
-            }
-        }
-        else if (enemy_die > player_die){
-            if(p->defence >= e[enemy_to_fight].defence){
-                printf("You dodged the attack!\n");
-            }else{
-                printf("Enemy attacks the player for %d damage!\n", e[enemy_to_fight].attack - p->defence);
-                p->health -= e[enemy_to_fight].attack - p->defence;
-            }
-        }
-        else{
-            printf("The attack were deflected!.\n");
-        }
-        printf("Current enemy HP: %d\n", e[enemy_to_fight].health);
-        printf("Current player HP: %d\n", p->health);
-
-    }while(((e[enemy_to_fight].health >= 1) && (p->health >= 1)) && ((roll == 'r') || (roll == 'R')));
-        //while either health is above 0 and 'r' is pressed...
-
-    //Print out the battle result.
-    if(e[enemy_to_fight].health < 1){
-        printf("You have defeated the enemy!\n");
-    }
-    else if(p->health < 1){
-        printf("You have been defeated!\n");
-    }
+    combat(p);
 
     return 0;
 }
@@ -130,6 +162,7 @@ to do: weapon types, randomize enemy (array?), inventory management, text-based 
     store player level, exp, items, learned abilities somehow
     graphics to display enemy? check opengl
 https://stackoverflow.com/questions/44574856/initialize-c-struct-through-a-function
+https://devforum.roblox.com/t/programming-loot-tables/458236
 
 
 OBSOLETE (keep for notes)
